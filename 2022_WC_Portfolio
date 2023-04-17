@@ -1,0 +1,254 @@
+-- Data of the 2022 World Cup
+-- Skills Used 
+-- Aggregation functions (SUM, COUNT, AVG, MAX)
+-- String functions (SUBSTRING, INSTR)
+-- Converting data types (converting strings to integers)
+-- Joining tables using INNER JOIN and GROUP BY clauses
+-- Using a Common Table Expression (CTE) to store intermediate results
+-- Creating views
+-- Sorting data using ORDER BY clauses
+-- Using conditional logic (CASE statements)
+-- Creating aliases for column names using the AS keyword
+-- Round numbers to the nearest integer using the ROUND function.
+
+
+SELECT 
+    *
+FROM
+    world_cup_matches;
+SELECT 
+    *
+FROM
+    world_cup_players;
+
+
+-- Selects relevant columns from the world_cup_players table and orders the results by playing time in descending order
+SELECT 
+    player,
+    pos,
+    age,
+    club,
+    `playing timemin`,
+    performancegls,
+    performanceast
+FROM
+    world_cup_players
+ORDER BY `Playing TimeMin` DESC;
+
+-- Groups players by squad, calculates the total number of goals and number of players for each squad, and calculates the average age rounded to the nearest integer
+SELECT 
+    SUBSTRING(squad, INSTR(squad, ' ') + 1) AS squad_name,
+    SUM(PerformanceGls) AS Team_Goals,
+    COUNT(*) AS Num_of_players,
+    ROUND(AVG(age)) AS Average_age
+FROM
+    world_cup_players
+GROUP BY squad;
+
+
+-- Select player name, team name, club, minutes played and goals scored from the World_cup_players table,
+-- joining it with a subquery to find the maximum goals scored for each team
+SELECT 
+    p.Player,
+    SUBSTRING(p.squad,
+        INSTR(p.squad, ' ') + 1) AS squad_name,
+    p.club,
+    p.`playing timemin` AS Minutes_played,
+    p.performancegls AS Goals_scored
+FROM
+    World_cup_players p
+        INNER JOIN
+    (SELECT 
+        SUBSTRING(squad, INSTR(squad, ' ') + 1) AS squad_name,
+            MAX(performancegls) AS max_goals
+    FROM
+        World_cup_players
+    GROUP BY squad_name) g ON SUBSTRING(p.squad,
+        INSTR(p.squad, ' ') + 1) = g.squad_name
+        AND p.performancegls = g.max_goals
+ORDER BY p.performancegls DESC;
+
+    
+    
+-- Create a Common Table Expression (CTE) to store the possession statistics
+WITH possession_stats AS (
+  SELECT 
+    team1, 
+    team2, 
+    `possession_team1`, 
+    `possession_team2`,
+    `possession_in_contest`,
+    `number_of_goals_team1`,
+    `number_of_goals_team2`
+  FROM World_cup_matches
+)
+
+-- Select the necessary columns from the CTE and add calculated columns
+SELECT 
+  team1, 
+  team2, 
+  `possession_team1`, 
+  `possession_team2`,
+  `possession_in_contest`,
+  
+  -- Use a CASE statement to determine which team had more possession
+  CASE 
+    WHEN `possession_team1` > `possession_team2` THEN team1
+    ELSE team2
+  END AS team_with_more_possession,
+  
+  -- Use a CASE statement to determine the winner of the match
+  CASE 
+    WHEN `number_of_goals_team1` > `number_of_goals_team2` THEN team1
+    WHEN `number_of_goals_team1` < `number_of_goals_team2` THEN team2
+    ELSE 'Tie'
+  END AS winner
+FROM possession_stats;
+
+
+
+CREATE VIEW home_team_stats AS
+    (SELECT 
+        team1,
+        possession_team1,
+        possession_in_contest,
+        number_of_goals_team1,
+        date,
+        hour,
+        category,
+        total_attempts_team1,
+        conceded_team1,
+        goal_inside_the_penalty_area_team1,
+        goal_outside_the_penalty_area_team1,
+        assists_team1,
+        on_target_attempts_team1,
+        off_target_attempts_team1,
+        attempts_inside_the_penalty_area_team1,
+        attempts_outside_the_penalty_area_team1,
+        left_channel_team1,
+        left_inside_channel_team1,
+        central_channel_team1,
+        right_inside_channel_team1,
+        right_channel_team1,
+        total_offers_to_receive_team1,
+        inbehind_offers_to_receive_team1,
+        inbetween_offers_to_receive_team1,
+        infront_offers_to_receive_team1,
+        receptions_first_third_team1,
+        attempted_line_breaks_team1,
+        yellow_cards_team1,
+        red_cards_team1,
+        fouls_against_team1,
+        offsides_team1,
+        passes_team1,
+        passes_completed_team1,
+        crosses_team1,
+        crosses_completed_team1,
+        switches_team1,
+        corners_team1,
+        free_kicks_team1,
+        penalties_scored_team1,
+        goal_preventions_team1,
+        own_goals_team1,
+        forced_turnovers_team1,
+        defensive_pressures_applied_team1
+    FROM
+        world_cup_matches);
+
+CREATE VIEW away_team_stats AS
+    (SELECT 
+        team2,
+        possession_team2,
+        possession_in_contest,
+        number_of_goals_team2,
+        date,
+        hour,
+        category,
+        total_attempts_team2,
+        conceded_team2,
+        goal_inside_the_penalty_area_team2,
+        goal_outside_the_penalty_area_team2,
+        assists_team2,
+        on_target_attempts_team2,
+        off_target_attempts_team2,
+        attempts_inside_the_penalty_area_team2,
+        attempts_outside_the_penalty_area_team2,
+        left_channel_team2,
+        left_inside_channel_team2,
+        central_channel_team2,
+        right_inside_channel_team2,
+        right_channel_team2,
+        total_offers_to_receive_team2,
+        inbehind_offers_to_receive_team2,
+        inbetween_offers_to_receive_team2,
+        infront_offers_to_receive_team2,
+        receptions_first_third_team2,
+        attempted_line_breaks_team2,
+        yellow_cards_team2,
+        red_cards_team2,
+        fouls_against_team2,
+        offsides_team2,
+        passes_team2,
+        passes_completed_team2,
+        crosses_team2,
+        crosses_completed_team2,
+        switches_team2,
+        corners_team2,
+        free_kicks_team2,
+        penalties_scored_team2,
+        goal_preventions_team2,
+        own_goals_team2,
+        forced_turnovers_team2,
+        defensive_pressures_applied_team2
+    FROM
+        world_cup_matches);
+
+SELECT 
+    *
+FROM
+    world_cup_matches
+ORDER BY STR_TO_DATE(date, '%d %b %Y %H:%i') ASC , STR_TO_DATE(hour, '%H:%i') ASC;
+
+
+SELECT 
+    Player,
+    squad,
+    performancegls AS Goals_scored,
+    ROW_NUMBER() OVER (PARTITION BY squad ORDER BY performancegls DESC) AS goals_rank
+FROM 
+    world_cup_players
+where performancegls > 0
+ORDER BY 
+    squad ASC, 
+    goals_rank ASC;
+    
+    CREATE TEMPORARY TABLE temp_players AS 
+SELECT 
+    *
+FROM 
+    world_cup_players
+WHERE 
+    age >= 30;
+
+SELECT 
+    squad, COUNT(*) AS num_players_over_30
+FROM
+    temp_players
+GROUP BY squad;
+    
+SELECT 
+    player,
+    pos,
+    age,
+    SUBSTRING(club, INSTR(club, ' ') + 1) AS club_name,
+    `playing timemin`,
+    performancegls,
+    performanceast
+FROM
+    world_cup_players
+WHERE
+    SUBSTRING(club, INSTR(club, ' ') + 1) IN ('Real Madrid' , 'Barcelona',
+        'Manchester City',
+        'Bayern Munich')
+ORDER BY `Playing TimeMin` DESC;
+
